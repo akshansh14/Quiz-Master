@@ -2,10 +2,11 @@
 import React from "react";
 import { cn } from "../../lib/utils";
 
-export default BackgroundBeams = ({ className }) => {
+const BackgroundBeams = ({ className }) => {
   return (
     <div
       className={cn(
+
         "absolute inset-0 z-0 h-full w-full bg-black opacity-25",
         className
       )}
@@ -14,3 +15,5 @@ export default BackgroundBeams = ({ className }) => {
     </div>
   );
 };
+
+export default BackgroundBeams;

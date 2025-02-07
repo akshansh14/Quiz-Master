@@ -1,106 +1,152 @@
-import { useState, useEffect } from "react"
-import QuizStart from "./components/QuizStart"
-import QuizQuestion from "./components/QuizQuestion"
-import QuizSummary from "./components/QuizSummary"
+import { useState, useEffect } from "react";
+import QuizQuestion from "./components/QuizQuestion";
+import ProgressBar from "./components/ProgressBar";
+import { fetchQuizData } from "./utils/api";
+import QuizSummary from "./components/QuizSummary";
+import QuizHeader from "./components/QuizHeader";
+import Navbar from "./components/Navbar";
 
 export default function App() {
-  const [quizData, setQuizData] = useState(null)
-  const [currentQuestion, setCurrentQuestion] = useState(0)
-  const [score, setScore] = useState(0)
-  const [showSummary, setShowSummary] = useState(false)
-  const [quizStarted, setQuizStarted] = useState(false)
+	const [quizData, setQuizData] = useState(null);
+	const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+	const [userAnswers, setUserAnswers] = useState({});
+	const [quizState, setQuizState] = useState("start"); // 'start', 'inProgress', 'completed'
+	const [score, setScore] = useState(0);
+	const [streak, setStreak] = useState(0); // Added streak for gamification
+	const [timeLeft, setTimeLeft] = useState(0);
 
-  useEffect(() => {
-    fetchQuizData()
-  }, [])
+	// Fetch quiz data once on mount
+	useEffect(() => {
+		fetchQuizData().then(setQuizData).catch(console.error);
+	}, []);
 
-  const fetchQuizData = async () => {
-    try {
-      const corsProxy = "https://api.allorigins.win/raw?url="
-      const apiUrl = encodeURIComponent("https://api.jsonserve.com/Uw5CrX")
-      const response = await fetch(corsProxy + apiUrl)
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`)
-      }
-      
-      const data = await response.json()
-      setQuizData(data.questions)
-      console.log("Fetched Data:", data)
-    } catch (error) {
-      console.error("Error fetching data:", error)
-    }
-  }
+	const startQuiz = () => {
+		setQuizState("inProgress");
+		setTimeLeft(quizData.duration * 60); // Convert minutes to seconds
+	};
+	const retakeQuiz = () => {
+		setCurrentQuestionIndex(0);
+		setUserAnswers({});
+		setScore(0);
+		setStreak(0);
+		setQuizState("start");
+	};
 
-  const startQuiz = () => {
-    setQuizStarted(true)
-  }
+	const handleAnswer = (questionId, answerId) => {
+		// Save user answer
+		setUserAnswers((prev) => ({ ...prev, [questionId]: answerId }));
+		const currentQuestion = quizData.questions[currentQuestionIndex];
+		const isCorrect = currentQuestion.options.find(
+			(opt) => opt.id === answerId
+		).is_correct;
+		if (isCorrect) {
+			setScore(
+				(prev) =>
+					prev + Number.parseFloat(quizData.correct_answer_marks)
+			);
+			setStreak((prev) => prev + 1);
+		} else {
+			setScore(
+				(prev) => prev - Number.parseFloat(quizData.negative_marks)
+			);
+			setStreak(0); // Reset streak on wrong answer
+		}
+		nextQuestion();
+	};
 
-  const handleAnswer = (isCorrect) => {
-    if (isCorrect) {
-      setScore(score + 1)
-    }
-  }
+	const nextQuestion = () => {
+		if (currentQuestionIndex < quizData.questions.length - 1) {
+			setCurrentQuestionIndex((prev) => prev + 1);
+		} else {
+			setQuizState("completed");
+		}
+	};
 
-  const handleNextQuestion = () => {
-    if (currentQuestion + 1 < quizData.length) {
-      setCurrentQuestion(currentQuestion + 1)
-    } else {
-      setShowSummary(true)
-    }
-  }
+	// Countdown timer effect
+	useEffect(() => {
+		if (quizState === "inProgress" && timeLeft > 0) {
+			const timer = setTimeout(
+				() => setTimeLeft((prev) => prev - 1),
+				1000
+			);
+			return () => clearTimeout(timer);
+		} else if (timeLeft === 0 && quizState === "inProgress") {
+			setQuizState("completed");
+		}
+	}, [timeLeft, quizState]);
 
-  const restartQuiz = () => {
-    setCurrentQuestion(0)
-    setScore(0)
-    setShowSummary(false)
-    setQuizStarted(false)
-  }
+	if (!quizData)
+		return (
+			<div className="flex h-screen items-center justify-center p-4 text-center">
+				Loading quiz...
+			</div>
+		);
 
-  if (!quizData) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>
-  }
+	// Compute a badge based on score (you can further tweak these thresholds)
+	const badge =
+		score >= 35
+			? "Gold Medal"
+			: score >= 25
+			? "Silver Medal"
+			: "Bronze Medal";
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-lg shadow-lg max-w-2xl w-full">
-        {!quizStarted && (
-          <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">Molecular Biology Quiz</h1>
-            <p className="mb-4 text-gray-600">Test your knowledge of DNA, RNA, and molecular genetics!</p>
-            <button
-              onClick={startQuiz}
-              className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition"
-            >
-              Start Quiz
-            </button>
-          </div>
-        )}
-        {quizStarted && !showSummary && (
-          <QuizQuestion
-            question={quizData[currentQuestion]}
-            onAnswer={handleAnswer}
-            onNext={handleNextQuestion}
-            currentQuestion={currentQuestion + 1}
-            totalQuestions={quizData.length}
-            isLastQuestion={currentQuestion === quizData.length - 1}
-          />
-        )}
-        {showSummary && (
-          <div className="text-center">
-            <h2 className="text-2xl font-bold mb-4">Quiz Complete!</h2>
-            <p className="text-lg mb-4">
-              You scored {score} out of {quizData.length}
-            </p>
-            <button
-              onClick={restartQuiz}
-              className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition"
-            >
-              Restart Quiz
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  )
+	return (
+		<div className="w-screen h-screen bg-gradient-to-br from-purple-600 to-blue-500 overflow-hidden relative">
+			{/* Fixed Navbar at the top */}
+			<div className="absolute top-0 w-full z-10">
+				<Navbar score={score} streak={streak} badge={badge} />
+			</div>
+
+			{/* Main Quiz Container Centered */}
+			<div className=" h-full mx-auto flex items-center justify-center">
+				<div className="mx-auto p-4">
+					<div className="bg-white shadow-2xl rounded-3xl p-8 animate-fadeIn">
+						{quizState === "start" && (
+							<QuizHeader
+								quizData={quizData}
+								onStart={startQuiz}
+							/>
+						)}
+
+						{quizState === "inProgress" && (
+							<>
+								<ProgressBar
+									current={currentQuestionIndex + 1}
+									total={quizData.questions.length}
+									timeLeft={timeLeft}
+								/>
+								<button
+									onClick={() => {
+										setQuizState("completed");
+									}}
+									className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+								>
+									Finish Test
+								</button>
+								<QuizQuestion
+									question={
+										quizData.questions[currentQuestionIndex]
+									}
+									onAnswer={handleAnswer}
+									setQuizState={setQuizState}
+									nextQuestion={nextQuestion}
+								/>
+							</>
+						)}
+
+						{quizState === "completed" && (
+							<QuizSummary
+								quizData={quizData}
+								score={score}
+								userAnswers={userAnswers}
+								onRetake={retakeQuiz}
+								setQuizState={setQuizState}
+								
+							/>
+						)}
+					</div>
+				</div>
+			</div>
+		</div>
+	);
 }

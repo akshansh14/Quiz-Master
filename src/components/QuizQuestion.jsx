@@ -1,105 +1,88 @@
-import { useState } from "react"
-import { CheckCircle, XCircle } from "lucide-react"
-import ReadingMaterialDialog from "./ReadingMaterialDialog"
-import BackgroundBeams from "./components/ui/background-beams";
+/* eslint-disable react/prop-types */
+import { useState } from "react";
 
+export default function QuizQuestion({ question, onAnswer, nextQuestion }) {
+	const [selectedOption, setSelectedOption] = useState(null);
 
+	const handleRadioChange = (e) => {
+		setSelectedOption(Number(e.target.value));
+	};
 
-function QuizQuestion({ question, onAnswer, onNext, currentQuestion, totalQuestions, isLastQuestion }) {
-  const [selectedAnswer, setSelectedAnswer] = useState(null)
-  const [hasAnswered, setHasAnswered] = useState(false)
+	const handleSubmit = () => {
+		if (selectedOption !== null) {
+			onAnswer(question.id, selectedOption);
+			setSelectedOption(null);
+		}
+	};
 
-  const handleAnswer = (option) => {
-    if (!hasAnswered) {
-      setSelectedAnswer(option)
-      setHasAnswered(true)
-      onAnswer(option.is_correct)
-    }
-  }
+	const handleClear = () => {
+		setSelectedOption(null);
+	};
 
-  const handleNext = () => {
-    setSelectedAnswer(null)
-    setHasAnswered(false)
-    onNext()
-  }
+	return (
+		<div className="w-[70vw] h-screen max-h-[400px] flex flex-col">
+			{/* Main Content */}
+			<div className="flex flex-1 overflow-hidden">
+				{/* Left Section - Question Content */}
+				<div className="w-3/5 p-6 border-r flex flex-col justify-between">
+					<div className="mb-6">
+						<h2 className="text-xl font-semibold mb-4">
+							{question.description}
+						</h2>
+					</div>
+					<div className="space-y-4">
+						<div className="flex gap-4">
+							<button
+								onClick={nextQuestion}
+								className={`flex-1 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white `}
+							>
+								Next
+							</button>
+							<button
+								onClick={handleSubmit}
+								disabled={selectedOption === null}
+								className={`flex-1 px-4 py-2 rounded-lg ${
+									selectedOption === null
+										? "bg-gray-300 cursor-not-allowed"
+										: "bg-blue-600 hover:bg-blue-700 text-white"
+								} transition`}
+							>
+								Submit Answer and Next
+							</button>
+						</div>
+					</div>
+				</div>
 
-  return (
-    <div>
-       <BackgroundBeams />
-      <div className="relative z-10">
-        <h1>Your content here</h1>
-      </div>
-      <div className="flex justify-between items-center mb-4">
-        <div className="text-sm font-semibold text-gray-500">
-          Question {currentQuestion} of {totalQuestions}
-        </div>
-        {question.reading_material && (
-          <ReadingMaterialDialog content={question.reading_material} />
-        )}
-      </div>
-      <h2 className="text-xl font-bold mb-4">{question.description}</h2>
-      <div className="space-y-3">
-        {question.options.map((option) => (
-          <div key={option.id} className="relative">
-            <button
-              onClick={() => handleAnswer(option)}
-              disabled={hasAnswered}
-              className={`w-full text-left p-4 rounded-lg transition duration-300 ease-in-out ${
-                !hasAnswered
-                  ? "bg-gray-100 hover:bg-gray-200"
-                  : selectedAnswer === option
-                  ? option.is_correct
-                    ? "bg-green-100 border-2 border-green-500"
-                    : "bg-red-100 border-2 border-red-500"
-                  : option.is_correct
-                  ? "bg-green-100 border-2 border-green-500"
-                  : "bg-gray-100"
-              }`}
-            >
-              <span className="pr-20">{option.description}</span>
-            </button>
-            {hasAnswered && selectedAnswer === option && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                {option.is_correct ? (
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                    <CheckCircle className="w-4 h-4 mr-1" /> Correct
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-                    <XCircle className="w-4 h-4 mr-1" /> Incorrect
-                  </span>
-                )}
-              </div>
-            )}
-            {hasAnswered && option.is_correct && selectedAnswer !== option && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                  <CheckCircle className="w-4 h-4 mr-1" /> Correct Answer
-                </span>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-      {hasAnswered && (
-        <div className="mt-6">
-          <div className="bg-blue-50 rounded-lg overflow-hidden">
-            <div className="bg-blue-500 text-white px-4 py-2 font-semibold">
-              Explanation
-            </div>
-            <div className="p-4">
-              <p>{question.detailed_solution}</p>
-            </div>
-          </div>
-          <button
-            onClick={handleNext}
-            className="mt-4 w-full bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition"
-          >
-            {isLastQuestion ? "Finish Quiz" : "Next Question"}
-          </button>
-        </div>
-      )}
-    </div>
-  )
+				{/* Right Section - Controls */}
+				<div className="w-2/5 p-6 bg-gray-50 flex flex-col justify-between">
+					<div className="space-y-4">
+						{question.options.map((option) => (
+							<label
+								key={option.id}
+								className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer"
+							>
+								<input
+									type="radio"
+									name="question-option"
+									value={option.id}
+									checked={selectedOption === option.id}
+									onChange={handleRadioChange}
+									className="mt-1"
+								/>
+								<span className="text-gray-700">
+									{option.description}
+								</span>
+							</label>
+						))}
+					</div>
+					<button
+						onClick={handleClear}
+						className=" px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+					>
+						Clear Response
+					</button>
+				</div>
+			</div>
+		</div>
+	);
 }
-  export default QuizQuestion;
