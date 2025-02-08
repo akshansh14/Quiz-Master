@@ -57,14 +57,26 @@ export default function App() {
     ).is_correct;
 
     if (isCorrect) {
-      setScore((prev) => prev + Number.parseFloat(quizData.correct_answer_marks));
+      setScore((prev) => {
+        const newScore = prev + Number.parseFloat(quizData.correct_answer_marks);
+        if (currentQuestionIndex === quizData.questions.length - 1) {
+          setFinalScore(newScore);
+        }
+        return newScore;
+      });
       setStreak((prev) => {
         const newStreak = prev + 1;
         setMaxStreak(current => Math.max(current, newStreak));
         return newStreak;
       });
     } else {
-      setScore((prev) => prev - Number.parseFloat(quizData.negative_marks));
+      setScore((prev) => {
+        const newScore = prev - Number.parseFloat(quizData.negative_marks);
+        if (currentQuestionIndex === quizData.questions.length - 1) {
+          setFinalScore(newScore);
+        }
+        return newScore;
+      });
       setStreak(0);
     }
     nextQuestion();
@@ -120,9 +132,9 @@ export default function App() {
         initial={{ y: -20, opacity: 0 }}
       >
         <Navbar 
-          score={quizState === "completed" ? finalScore : 0} 
+          score={quizState === "completed" ? finalScore : score}
           streak={quizState === "completed" ? finalMaxStreak : maxStreak}
-          badge={getBadge(quizState === "completed" ? finalScore : 0)}
+          badge={getBadge(quizState === "completed" ? finalScore : score)}
           quizState={quizState}
         />
       </motion.div>
