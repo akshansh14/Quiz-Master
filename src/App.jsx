@@ -113,27 +113,28 @@ export default function App() {
   };
 
   return (
-    <div className="w-screen h-screen bg-gradient-to-br from-[#F8FAFC] to-[#14B8A6]/10 overflow-hidden relative">
+    <div className="w-screen min-h-screen bg-gradient-to-br from-[#F8FAFC] to-[#14B8A6]/10 overflow-x-hidden">
       <motion.div
-        className="absolute top-0 w-full z-10"
+        className="sticky top-0 w-full z-10"
         animate={{ y: 0, opacity: 1 }}
         initial={{ y: -20, opacity: 0 }}
       >
         <Navbar 
           score={quizState === "completed" ? finalScore : 0} 
           streak={quizState === "completed" ? finalMaxStreak : maxStreak}
-          badge={getBadge(quizState === "completed" ? finalScore : 0)} 
+          badge={getBadge(quizState === "completed" ? finalScore : 0)}
+          quizState={quizState}
         />
       </motion.div>
 
-      <div className="h-full mx-auto flex items-center justify-center bg-[url('/bg.jpg')] bg-cover bg-center">
+      <div className="min-h-[calc(100vh-64px)] flex items-center justify-center bg-[url('/bg.jpg')] bg-cover bg-center p-4">
         <motion.div
-          className="p-4"
+          className="w-full max-w-4xl"
           animate={{ scale: 1 }}
           initial={{ scale: 0.8 }}
           transition={{ type: "spring", stiffness: 100 }}
         >
-          <div className="bg-white/95 backdrop-blur-sm shadow-2xl rounded-3xl p-8">
+          <div className="bg-white/95 backdrop-blur-sm shadow-2xl rounded-3xl p-4 md:p-8">
             {quizState === "start" && (
               <QuizHeader quizData={quizData} onStart={startQuiz} />
             )}

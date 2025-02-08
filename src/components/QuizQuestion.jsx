@@ -21,9 +21,9 @@ export default function QuizQuestion({
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setElapsedTime((prev) => {
+      setElapsedTime(prev => {
         const newTime = prev + 1;
-        onTimeUpdate(newTime);
+        requestAnimationFrame(() => onTimeUpdate(newTime));
         return newTime;
       });
     }, 1000);
@@ -47,26 +47,26 @@ export default function QuizQuestion({
   };
 
   return (
-    <motion.div className="max-w-4xl min-w-[1000px] mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+    <motion.div className="w-full max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
       <div className="absolute top-4 right-4 text-[#0F172A] flex items-center gap-2">
         <Timer className="h-4 w-4" />
-        <span>
+        <span className="text-sm md:text-base">
           {Math.floor(elapsedTime / 60)}:
           {(elapsedTime % 60).toString().padStart(2, "0")}
         </span>
       </div>
-      <div className="p-6 bg-gradient-to-r from-[#14B8A6] to-[#7C3AED] text-white">
-        <h2 className="text-xl font-bold flex items-center">
-          <Zap className="h-6 w-6 mr-2" /> {question.description}
+      <div className="p-4 md:p-6 bg-gradient-to-r from-[#14B8A6] to-[#7C3AED] text-white">
+        <h2 className="text-lg md:text-xl font-bold flex items-center">
+          <Zap className="h-5 w-5 md:h-6 md:w-6 mr-2" /> {question.description}
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-6">
+      <div className="grid grid-cols-1 gap-4 p-4 md:grid-cols-2 md:p-6">
         {question.options.map((option) => (
           <motion.label
             key={option.id}
             whileHover={{ y: -2, scale: 1.02 }}
-            className={`p-4 rounded-xl cursor-pointer transition-all ${
+            className={`p-3 md:p-4 rounded-xl cursor-pointer transition-all ${
               selectedOption === option.id
                 ? 'bg-[#14B8A6]/10 border-2 border-[#14B8A6]'
                 : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent'
@@ -98,27 +98,25 @@ export default function QuizQuestion({
         ))}
       </div>
 
-      <div className="p-6 border-t border-gray-100 flex justify-between items-center">
-        <div className="flex space-x-4">
-          <motion.button
-            onClick={() => setQuizState("completed")}
-            className="px-6 py-2 bg-[#F97316] text-white rounded-lg hover:bg-[#F97316]/90 flex items-center"
-          >
-            Finish Test
-          </motion.button>
+      <div className="p-4 md:p-6 border-t border-gray-100 flex flex-col md:flex-row gap-3 md:gap-4 justify-end">
+        <motion.button
+          onClick={() => setQuizState("completed")}
+          className="w-full md:w-auto px-6 py-2 bg-[#F97316] text-white rounded-lg hover:bg-[#F97316]/90 flex items-center justify-center"
+        >
+          Finish Test
+        </motion.button>
 
-          <motion.button
-            onClick={handleSubmit}
-            disabled={selectedOption === null}
-            className={`px-6 py-2 rounded-lg text-white flex items-center ${
-              selectedOption === null
-                ? 'bg-gray-200 cursor-not-allowed'
-                : 'bg-[#14B8A6] hover:bg-[#14B8A6]/90'
-            }`}
-          >
-            Submit Answer
-          </motion.button>
-        </div>
+        <motion.button
+          onClick={handleSubmit}
+          disabled={selectedOption === null}
+          className={`w-full md:w-auto px-6 py-2 rounded-lg text-white flex items-center justify-center ${
+            selectedOption === null
+              ? 'bg-gray-200 cursor-not-allowed'
+              : 'bg-[#14B8A6] hover:bg-[#14B8A6]/90'
+          }`}
+        >
+          Submit Answer
+        </motion.button>
       </div>
     </motion.div>
   );

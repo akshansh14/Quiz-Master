@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Bell, Award, ChevronDown, Check, Star, Trophy, Zap } from 'lucide-react';
+import { BADGE_MILESTONES } from '../constants';
 
-const BADGE_MILESTONES = {
-  BEGINNER: { streak: 5, icon: '🌱', title: 'Quiz Novice' },
-  INTERMEDIATE: { streak: 10, icon: '⭐', title: 'Quiz Star' },
-  ADVANCED: { streak: 25, icon: '🏆', title: 'Quiz Champion' },
-  EXPERT: { streak: 50, icon: '👑', title: 'Quiz Master' },
-  LEGEND: { streak: 100, icon: '🔥', title: 'Quiz Legend' }
+// Add streak animation variants
+const streakVariants = {
+  initial: { scale: 0.8, opacity: 0 },
+  animate: { scale: 1, opacity: 1 },
+  exit: { scale: 0.8, opacity: 0 }
 };
 
-export default function Navbar({ score, streak, badge }) {
+export default function Navbar({ score, streak, badge, quizState }) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
   const [newBadge, setNewBadge] = useState(null);
@@ -60,40 +60,52 @@ export default function Navbar({ score, streak, badge }) {
 
   return (
     <div className="relative">
-      <nav className="bg-white bg-opacity-90 backdrop-blur-md text-[#0F172A] py-3 px-6 flex justify-between items-center shadow-xl">
+      <nav className="bg-white bg-opacity-90 backdrop-blur-md text-[#0F172A] py-2 md:py-3 px-4 md:px-6 flex flex-col md:flex-row gap-3 md:gap-0 justify-between items-center shadow-xl">
         <motion.div className="flex items-center space-x-2">
-          <Zap className="h-6 w-6 text-[#14B8A6]" fill="currentColor" />
-          <span className="text-2xl font-bold bg-gradient-to-r from-[#14B8A6] to-[#7C3AED] bg-clip-text text-transparent">
+          <Zap className="h-5 w-5 md:h-6 md:w-6 text-[#14B8A6]" fill="currentColor" />
+          <span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-[#14B8A6] to-[#7C3AED] bg-clip-text text-transparent">
             QuizMaster
           </span>
         </motion.div>
         
-        <div className="flex items-center space-x-6">
-          <motion.div 
-            className="flex items-center space-x-2 bg-[#14B8A6]/10 px-4 py-1 rounded-full"
-            whileHover={{ scale: 1.05 }}
-          >
-            <Star className="h-5 w-5 text-[#14B8A6]" />
-            <span className="font-medium text-[#0F172A]">{score} XP</span>
-          </motion.div>
-          
-          <motion.div 
-            className="flex items-center space-x-2 bg-[#14B8A6]/10 px-4 py-1 rounded-full"
-            whileHover={{ scale: 1.05 }}
-          >
-            <Trophy className="h-5 w-5 text-[#14B8A6]" />
-            <span className="font-medium text-[#0F172A]">Best Streak: {streak}</span>
-          </motion.div>
+        <div className="flex flex-wrap justify-center md:justify-end items-center gap-3 md:gap-6">
+          {quizState === "completed" && (
+            <>
+              <motion.div 
+                className="flex items-center space-x-2 bg-[#14B8A6]/10 px-3 md:px-4 py-1 rounded-full text-sm md:text-base"
+                variants={streakVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+              >
+                <Star className="h-4 w-4 md:h-5 md:w-5 text-[#14B8A6]" />
+                <span className="font-medium text-[#0F172A]">{score} XP</span>
+              </motion.div>
+
+              {streak > 0 && (
+                <motion.div 
+                  className="flex items-center space-x-2 bg-[#14B8A6]/10 px-3 md:px-4 py-1 rounded-full text-sm md:text-base"
+                  variants={streakVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                >
+                  <Trophy className="h-4 w-4 md:h-5 md:w-5 text-[#14B8A6]" />
+                  <span className="font-medium text-[#0F172A]">Best: {streak}</span>
+                </motion.div>
+              )}
+            </>
+          )}
 
           {/* Badges Dropdown */}
           <motion.div className="relative" whileHover={{ scale: 1.05 }}>
             <button
               onClick={() => setShowDropdown(!showDropdown)}
-              className="flex items-center space-x-2 bg-gray-800/50 hover:bg-gray-700/50 p-2 rounded-lg transition-all"
+              className="flex items-center space-x-2 bg-gray-800/50 hover:bg-gray-700/50 p-2 rounded-lg transition-all text-sm md:text-base"
             >
-              <Award className="h-5 w-5 text-blue-300" />
+              <Award className="h-4 w-4 md:h-5 md:w-5 text-blue-300" />
               <span className="font-medium">Badges</span>
-              <ChevronDown className={`h-4 w-4 transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`h-3 w-3 md:h-4 md:w-4 transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
             </button>
 
             <motion.div
