@@ -7,6 +7,7 @@ export const fetchQuizData = async () => {
 				"https://api.jsonserve.com/Uw5CrX"
 			)}`
 		);
+		console.log(response.data)
 		return  response.data;
 	} catch (error) {
 		console.error("Error fetching quiz data:", error);

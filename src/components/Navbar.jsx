@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, Award, ChevronDown, Check } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Bell, Award, ChevronDown, Check, Star, Trophy, Zap } from 'lucide-react';
 
 const BADGE_MILESTONES = {
   BEGINNER: { streak: 5, icon: '🌱', title: 'Quiz Novice' },
@@ -59,69 +60,103 @@ export default function Navbar({ score, streak, badge }) {
 
   return (
     <div className="relative">
-      <nav className="bg-gray-900 bg-opacity-75 backdrop-blur-sm text-white py-3 px-6 flex justify-between items-center">
-        <div className="text-2xl font-bold">Quiz Master</div>
-        <div className="flex space-x-6 items-center">
-          <div className="relative">
-            <button 
+      <nav className="bg-white bg-opacity-90 backdrop-blur-md text-[#0F172A] py-3 px-6 flex justify-between items-center shadow-xl">
+        <motion.div className="flex items-center space-x-2">
+          <Zap className="h-6 w-6 text-[#14B8A6]" fill="currentColor" />
+          <span className="text-2xl font-bold bg-gradient-to-r from-[#14B8A6] to-[#7C3AED] bg-clip-text text-transparent">
+            QuizMaster
+          </span>
+        </motion.div>
+        
+        <div className="flex items-center space-x-6">
+          <motion.div 
+            className="flex items-center space-x-2 bg-[#14B8A6]/10 px-4 py-1 rounded-full"
+            whileHover={{ scale: 1.05 }}
+          >
+            <Star className="h-5 w-5 text-[#14B8A6]" />
+            <span className="font-medium text-[#0F172A]">{score} XP</span>
+          </motion.div>
+          
+          <motion.div 
+            className="flex items-center space-x-2 bg-[#14B8A6]/10 px-4 py-1 rounded-full"
+            whileHover={{ scale: 1.05 }}
+          >
+            <Trophy className="h-5 w-5 text-[#14B8A6]" />
+            <span className="font-medium text-[#0F172A]">Best Streak: {streak}</span>
+          </motion.div>
+
+          {/* Badges Dropdown */}
+          <motion.div className="relative" whileHover={{ scale: 1.05 }}>
+            <button
               onClick={() => setShowDropdown(!showDropdown)}
-              className="flex items-center space-x-2 hover:bg-gray-800 p-2 rounded-lg transition"
+              className="flex items-center space-x-2 bg-gray-800/50 hover:bg-gray-700/50 p-2 rounded-lg transition-all"
             >
               <Award className="h-5 w-5 text-blue-300" />
               <span className="font-medium">Badges</span>
-              <ChevronDown className="h-4 w-4" />
+              <ChevronDown className={`h-4 w-4 transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
             </button>
 
-            {showDropdown && (
-              <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg py-2 z-50">
-                <div className="px-4 py-2 border-b">
-                  <h3 className="font-semibold text-gray-900">Your Badges</h3>
-                </div>
-                <div className="max-h-64 overflow-y-auto">
-                  {badgeHistory.map((badge, index) => (
-                    <div key={index} className="px-4 py-2 hover:bg-gray-50">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-2xl">
-                          {BADGE_MILESTONES[badge.type].icon}
-                        </span>
-                        <div className="flex-1">
-                          <p className="font-medium text-gray-900">{badge.title}</p>
-                          <p className="text-sm text-gray-500">
-                            Earned at {badge.streak} streak
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {badgeHistory.length === 0 && (
-                    <p className="text-gray-500 text-center py-4">
-                      No badges earned yet
-                    </p>
-                  )}
-                </div>
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: showDropdown ? 1 : 0, y: showDropdown ? 0 : -10 }}
+              className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-2xl py-2 z-50"
+            >
+              <div className="px-4 py-2 border-b">
+                <h3 className="font-semibold text-gray-900 flex items-center">
+                  <Award className="h-5 w-5 mr-2 text-blue-500" /> Earned Badges
+                </h3>
               </div>
-            )}
-          </div>
+              <div className="max-h-64 overflow-y-auto space-y-2 p-2">
+                {badgeHistory.map((badge, index) => (
+                  <motion.div
+                    key={index}
+                    variants={streakVariants}
+                    initial="initial"
+                    animate="animate"
+                    className={`flex items-center p-2 rounded-lg ${BADGE_MILESTONES[badge.type].color}`}
+                  >
+                    <span className="text-2xl mr-3">{BADGE_MILESTONES[badge.type].icon}</span>
+                    <div>
+                      <p className="font-medium text-gray-900">{badge.title}</p>
+                      <p className="text-xs text-gray-600">Achieved at {badge.streak} streak</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
         </div>
       </nav>
 
+      {/* New Badge Notification */}
       {showNotification && (
-        <div className="absolute top-16 right-4 w-80 bg-white rounded-lg shadow-lg p-4 z-50">
+        <motion.div
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="absolute top-16 right-4 w-80 bg-white rounded-xl shadow-xl p-4 z-50 border-2 border-yellow-400"
+        >
           <div className="flex items-center space-x-3">
-            <span className="text-3xl">{newBadge.icon}</span>
+            <motion.div 
+              className="p-2 rounded-full bg-yellow-100"
+              animate={{ rotate: [0, 15, -15, 0] }}
+              transition={{ repeat: Infinity, duration: 2 }}
+            >
+              <span className="text-3xl">{newBadge.icon}</span>
+            </motion.div>
             <div className="flex-1">
-              <h3 className="font-semibold text-gray-900">New Badge Unlocked!</h3>
+              <h3 className="font-bold text-gray-900">New Achievement!</h3>
               <p className="text-sm text-gray-600">{newBadge.title}</p>
             </div>
-            <button 
+            <motion.button 
               onClick={claimBadge}
-              className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm hover:bg-blue-600 transition flex items-center space-x-1"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1 rounded-full text-sm flex items-center space-x-1"
             >
-              <span>Claim</span>
               <Check className="h-4 w-4" />
-            </button>
+            </motion.button>
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );
