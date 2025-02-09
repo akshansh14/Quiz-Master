@@ -100,7 +100,7 @@ export default function QuizQuestion({
 
       <div className="p-4 md:p-6 border-t border-gray-100 flex flex-col md:flex-row gap-3 md:gap-4 justify-end">
         <motion.button
-          onClick={() => setQuizState("completed")}
+          onClick={() => setQuizState()}
           className="w-full md:w-auto px-6 py-2 bg-[#F97316] text-white rounded-lg hover:bg-[#F97316]/90 flex items-center justify-center"
         >
           Finish Test

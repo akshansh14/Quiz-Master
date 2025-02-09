@@ -49,6 +49,12 @@ export default function App() {
     }
   };
 
+  const finishQuiz = () => {
+    setFinalScore(score);
+    setFinalMaxStreak(maxStreak);
+    setQuizState("completed");
+  };
+
   const handleAnswer = (questionId, answerId) => {
     setUserAnswers((prev) => ({ ...prev, [questionId]: answerId }));
     const currentQuestion = quizData.questions[currentQuestionIndex];
@@ -86,9 +92,7 @@ export default function App() {
     if (currentQuestionIndex < quizData.questions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
     } else {
-      setFinalScore(score);
-      setFinalMaxStreak(maxStreak);
-      setQuizState("completed");
+      finishQuiz();
     }
   };
 
@@ -163,7 +167,7 @@ export default function App() {
                 <QuizQuestion
                   question={quizData.questions[currentQuestionIndex]}
                   onAnswer={handleAnswer}
-                  setQuizState={setQuizState}
+                  setQuizState={finishQuiz}
                   nextQuestion={nextQuestion}
                   onTimeUpdate={handleTimeUpdate}
                 />
